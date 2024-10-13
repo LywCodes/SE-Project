@@ -1,9 +1,68 @@
+<?php
+    include("../config.php");
 
+    session_start();
+    if(!isset($_SESSION["store_id"])){
+        header("Location: homepage.php");
+      }
+        //ini untuk submit button
+   if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
+       $product_name = $_POST['product_name'];
+       $price = $_POST['price'];
+       $description = $_POST['description'];
+       $store_id = $_SESSION['store_id'];
+        //ini untuk foto2 product 
+       $target_pict = "../image/";
+       $fileNames = basename($_FILES["image"]["name"]);
+       $target_file = $target_pict . $fileNames;
+       $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+       $image_size = $_FILES["image"]["size"];
+       
+       if (!isset($_FILES["image"]["tmp_name"])) {
+           echo "File is not uploaded.";
+           exit();
+       }
+       if (!in_array($imageFileType, ["jpg", "jpeg", "png"])) {
+           echo "Sorry, only JPG, JPEG & PNG files are allowed.";
+           exit();
+       }
+       if (!move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+           echo "Sorry, there was an error uploading your file.";
+           exit();
+       }
+        //ini untuk menggabungkan data2
+       $saveQuery = "INSERT INTO product (product_name, store_id, product_price, product_description, product_availability, product_image)
+           VALUES ('$product_name', '$store_id', '$price', '$description','1', '$fileNames')";
+
+       if (mysqli_query($conn, $saveQuery)) {
+           echo "berhasil hehe";
+           header("Location: ./homepage.php");
+     exit();
+       } else {
+           echo "Error: ";
+       }
+       mysqli_close($conn);
+     }
+     ?>
+
+<?php
+        //ini untuk delete
+  if (isset($_GET['delete_id'])) {
+      $delete_id = $_GET['delete_id'];
+      $delete_query = "DELETE FROM product WHERE product_id = $delete_id";
+      if ($connect->query($delete_query) === TRUE) {
+          header("Location: " . $_SERVER['PHP_SELF']);
+          exit();
+      } else {
+          echo "Error: " . $connect->error;
+      }
+  }
+?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
- <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Input Form</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
